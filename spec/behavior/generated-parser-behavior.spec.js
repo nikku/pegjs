@@ -1341,6 +1341,38 @@ describe("generated parser behavior", function() {
             ]
           });
         });
+
+        it( "reports expectations correctly with look ahead", function () {
+          var parser = peg.generate( [
+            'Start',
+            '  = Char+ End',
+            'End',
+            '  = "e"',
+            'Char',
+            '  = !End [a-z]'
+          ].join( "\n" ), options );
+          expect( parser ).toFailToParse( "a", {
+            expected: [
+              { type: 'class', parts: [ [ 'a', 'z' ] ], inverted: false, ignoreCase: false },
+              { type: 'literal', text: 'e', ignoreCase: false }
+            ]
+          } );
+        } );
+
+        it("reports expectations correctly with look ahead (original)", function () {
+          var parser = peg.generate( [
+            'Statement',
+            '  = "{" __ !Statement Statement __ "}"',
+            '__',
+            '  = [ ]*'
+          ].join( "\n" ), options );
+          expect( parser ).toFailToParse( "{x}", {
+            expected:  [
+              { type: 'class', parts: [ ' ' ], inverted: false, ignoreCase: false },
+              { type: 'literal', text: '{', ignoreCase: false }
+            ]
+          } );
+        });
       });
 
       describe("found string reporting", function() {
